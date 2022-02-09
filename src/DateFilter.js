@@ -16,8 +16,9 @@ function DateFilter({ setDia }) {
     }
 
     return (
-        <div>
+        <div className="container">
             <h2>Pesquise a data para saber o valor do Bitcoin</h2>
+            <p>Currency padrão da pesquisa por data: UDS / DOLAR</p>
             <form onSubmit={(e) => e.preventDefault()}>
                 <label>From: </label>
                 <input
