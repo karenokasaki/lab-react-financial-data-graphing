@@ -10,30 +10,38 @@ function BitcomApi() {
     const [dataApi, setDataApi] = useState({
         'date': 'value'
     })
-    
+
     const [link, setLink] = useState('http://api.coindesk.com/v1/bpi/historical/close.json')
     const [dia, setDia] = useState(null) //data dos valores do bitcoin {from: YYYY-MM-DD, to: YYYY-MM-DD}
     const [loading, setLoading] = useState(false)
     const [chart, setChart] = useState(null);
     const [currency, setCurrency] = useState('USD')
     const [minMax, setMinMax] = useState([])
-    
+
     const [realtimeLink, setRealTimeLink] = useState(`https://api.coindesk.com/v1/bpi/currentprice/${currency}.json`)
     const [realTimePrice, setRealTimePrice] = useState('')
 
-    const [dataBRL, setDataBRL] = useState({'dia': 'valor'})
-    
+    const [dataBRL, setDataBRL] = useState({ 'dia': 'valor' })
+    const [dataCNY, setDataCNY] = useState({ 'dia': 'valor' })
+
+
+
     useEffect(() => {
         axios
             .get('https://api.coindesk.com/v1/bpi/historical/close.json?currency=BRL')
             .then((response) => {
                 setDataBRL(response.data.bpi)
-                console.log(response.data)
             })
             .catch((error) => {
                 console.log(error)
             })
-            
+        axios
+            .get('https://api.coindesk.com/v1/bpi/historical/close.json?currency=CNY')
+            .then((response) => {
+                setDataCNY(response.data.bpi)
+            }).catch((error) => {
+                console.log(error)
+            })
     }, [])
 
     useEffect(() => {
@@ -75,7 +83,7 @@ function BitcomApi() {
                 console.log(error);
             });
     }, [link]);
-    
+
 
     useEffect(() => {
         if (!loading) { // se loading for false (api já terminou de enviar as informações), renderizar o chart
@@ -87,34 +95,51 @@ function BitcomApi() {
                     chart.destroy();
                 }
 
+
                 const instanceChart = new Chart(
                     ctx, { //config
-                        type: 'line',
-                        data: {
-                            labels: Object.keys(dataApi),
-                            datasets: [{
-                                label: "Preço Bitcoin na moeda Escolhida",
-                                data: Object.values(dataApi),
-                                borderColor: 'rgb(21, 114, 161)',
-                                tension: 0.2
-                            },
-                            {
-                                label: "Preço Bitcoin REAL (valores em reais)",
-                                data: Object.values(dataBRL),
-                                borderColor: 'rgb(101, 93, 138)',
-                                tension: 0.2
-                            }]
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(dataApi),
+                        datasets: [{
+                            label: "Preço Bitcoin na moeda Escolhida",
+                            data: Object.values(dataApi),
+                            borderColor: 'rgb(21, 114, 161)',
+                            tension: 0.2
                         },
-                    }
+                        {
+                            label: "Preço Bitcoin no BRASIL (valores em reais R$)",
+                            data: Object.values(dataBRL),
+                            borderColor: 'rgb(101, 93, 138)',
+                            tension: 0.2
+                        },
+                        {
+                            label: "Preço Bitcoin na CHINA (valores em Yuan ¥)",
+                            data: Object.values(dataCNY),
+                            borderColor: 'rgb(243, 197, 197)',
+                            tension: 0.2
+                        }]
+                    },
+                }
                 )
                 setChart(instanceChart)
-            }  
+            }
             renderChart()
-
             setMinMax(Object.values)
         }
-        
     }, [loading, dataApi])
+
+    useEffect(() => {
+        
+    })
+
+    const ArrayMin = function (array) {
+        return Math.min.apply(Math, array)
+    }
+
+    const ArrayMax = function (array) {
+        return Math.max.apply(Math, array)
+    }
     
     return (
         <div>
@@ -123,8 +148,8 @@ function BitcomApi() {
                 <DateFilter setDia={setDia} />
             </div>
             <div className="graph">
-                <p>Valor mímimo: {Math.min(minMax)} / Valor máximo: {Math.max(minMax)}</p>
-                
+                <p>Valor mímimo: {ArrayMax(minMax)} / Valor máximo: {ArrayMin(minMax)}</p>
+
                 {loading ? "Carregando..." : (<canvas className="graph" id="instanceChart" />)}
             </div>
         </div>
